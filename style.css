@@ -1,0 +1,25 @@
+body {
+  margin: 0;
+}
+
+canvas {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+}
+
+video {
+  display: none;
+}
+
+
+.ui {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: rgba(0,0,0,.6);
+  font-family: sans-serif;
+  color: #fff;
+  padding: 16px;
+  border-radius: 0 0 6px 0;
+}
