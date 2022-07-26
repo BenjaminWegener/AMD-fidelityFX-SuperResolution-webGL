@@ -128,7 +128,6 @@ function loop(time) {
   glea.clear();
   glea.uni('width', glea.width);
   glea.uni('height', glea.height);
-  glea.uni('time', time * .005);
 
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   requestAnimationFrame(loop);
@@ -136,7 +135,7 @@ function loop(time) {
 
 function accessWebcam(video) {
   return new Promise((resolve, reject) => {
-    const mediaConstraints = { audio: false, video: { width: 1280, height: 720, brightness: {ideal: 2} } };
+    const mediaConstraints = { audio: false, video: { width: 1920, height: 1080, brightness: {ideal: 2} } };
     navigator.mediaDevices.getUserMedia(mediaConstraints).then(mediaStream => {
       video.srcObject = mediaStream;
       video.setAttribute('playsinline', true);
