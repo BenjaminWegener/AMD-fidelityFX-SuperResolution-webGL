@@ -135,7 +135,7 @@ function loop(time) {
 
 function accessWebcam(video) {
   return new Promise((resolve, reject) => {
-    const mediaConstraints = { audio: false, video: { width: 1920, height: 1080, brightness: {ideal: 2} } };
+    const mediaConstraints = { audio: false, video: { width: {ideal: 1920}, height: {ideal: 1080}, brightness: {ideal: 2} } };
     navigator.mediaDevices.getUserMedia(mediaConstraints).then(mediaStream => {
       video.srcObject = mediaStream;
       video.setAttribute('playsinline', true);
