@@ -1,7 +1,7 @@
-// this is just for code highlighting in VSCode
-// via the glsl-literal extension
-const glsl = x => x;
+const WIDTH = 640;
+const HEIGHT = 360;
 
+const glsl = x => x;
 const frag = glsl`
 // Copyright (c) 2021 Advanced Micro Devices, Inc. All rights reserved.
 //
@@ -25,7 +25,6 @@ const frag = glsl`
 
 // FidelityFX FSR v1.0.2 by AMD
 // ported to mpv by agyild
-// ported to WebGL by @BenjaminWegener
 
 // Changelog
 // Made it compatible with pre-OpenGL 4.0 renderers
@@ -36,24 +35,69 @@ const frag = glsl`
 // Notes
 // Per AMD's guidelines only upscales content up to 4x (e.g., 1080p -> 2160p, 720p -> 1440p etc.) and everything else in between,
 // that means FSR will scale up to 4x at maximum, and any further scaling will be processed by mpv's scalers
+
+
+#define SHARPENING 1.0 // Sharpening intensity: Adjusts sharpening intensity by averaging the original pixels to the sharpened result. 1.0 is the unmodified default. 0.0 to 1.0.
+#define CONTRAST 1.0 // Adjusts the range the shader adapts to high contrast (0 is not all the way off). Higher values = more high contrast sharpening. 0.0 to 1.0.
+
 precision highp float;
 
 uniform float width;
 uniform float height;
+uniform float texWidth;
+uniform float texHeight;
+
 float width_half;
 
 uniform sampler2D camTexture;
 
-const int zoom = 1;
-#define SHARPENING 1.0 // Sharpening intensity: Adjusts sharpening intensity by averaging the original pixels to the sharpened result. 1.0 is the unmodified default. 0.0 to 1.0.
-#define CONTRAST 1.0 // Adjusts the range the shader adapts to high contrast (0 is not all the way off). Higher values = more high contrast sharpening. 0.0 to 1.0.
+
+float sinc(float x)
+{
+    return sin(x * 3.1415926535897932384626433) / (x * 3.1415926535897932384626433); 
+}
+float lanczosWeight(float d, float n)
+{
+    return (d == 0.0) ? (1.0) : (d*d < n*n ? sinc(d) * sinc(d / n) : 0.0);
+}
+vec3 Lanczos3(vec2 uv, vec2 InvResolution)
+{
+    vec2 center = uv - (mod(uv / InvResolution, 1.0)-0.5) * InvResolution;// texel center
+    vec2 offset = (uv - center)/InvResolution;// relevant texel position in the range -0.5～+0.5
+    
+    vec3 col = vec3(0,0,0);
+    float weight = 0.0;
+    for(int x = -3; x < 3; x++){
+    for(int y = -3; y < 3; y++){
+        
+        float wx = lanczosWeight(float(x)-offset.x, 3.0);
+        float wy = lanczosWeight(float(y)-offset.y, 3.0);
+        float w = wx * wy;
+        
+        col += w * texture2D(camTexture, center + vec2(x,y) * InvResolution).rgb;
+        weight += w;
+    }
+    }
+    col /= weight;
+    
+    return col;
+}
+
 
 void main() {
 	width_half = width / 2.0;
 	vec2 coord = 1.0 - gl_FragCoord.xy / vec2(width, height);
 	vec4 e = texture2D(camTexture, coord);
-
+	
 	if (gl_FragCoord.x > width_half){
+        //vec2 InvResolution = 1.0 / vec2(texWidth, texHeight);	
+		vec2 InvResolution = 1.0 / vec2(width, height);	
+		e = vec4(Lanczos3(coord, InvResolution), 1);
+		
+		// fetch a 3x3 neighborhood around the pixel 'e',
+		//  a b c
+		//  d(e)f
+		//  g h i	
 		vec2 a_coord =  1.0 - (gl_FragCoord.xy + vec2(-1.0, -1.0)) / vec2(width, height);
 		vec4 a_tex = texture2D(camTexture, a_coord);
 		vec3 a = a_tex.rgb;
@@ -78,6 +122,9 @@ void main() {
 		vec2 i_coord =  1.0 - (gl_FragCoord.xy + vec2( 1.0,  1.0)) / vec2(width, height);
 		vec4 i_tex = texture2D(camTexture, i_coord);
 		vec3 i = i_tex.rgb;
+
+		//biliniear filtering
+		//e.rgb = (e.rgb + a + b + c + d + f + g + h + i) / 9.0;	
 
 		// Soft min and max.
 		//  a b c			b
@@ -148,6 +195,7 @@ const glea = new GLea({
 
 window.addEventListener('resize', () => {
   glea.resize();
+  console.log(glea.width);
 });
 
 function loop(time) {
@@ -161,6 +209,8 @@ function loop(time) {
   glea.clear();
   glea.uni('width', glea.width);
   glea.uni('height', glea.height);
+  glea.uni('texWidth', WIDTH);
+  glea.uni('texHeight', HEIGHT);
 
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   requestAnimationFrame(loop);
@@ -168,7 +218,7 @@ function loop(time) {
 
 function accessWebcam(video) {
   return new Promise((resolve, reject) => {
-    const mediaConstraints = { audio: false, video: { width: {ideal: 1920}, height: {ideal: 1080}, brightness: {ideal: 2} } };
+    const mediaConstraints = { audio: false, video: { width: {ideal: WIDTH}, height: {ideal: HEIGHT}, brightness: {ideal: 2} } };
     navigator.mediaDevices.getUserMedia(mediaConstraints).then(mediaStream => {
       video.srcObject = mediaStream;
       video.setAttribute('playsinline', true);
