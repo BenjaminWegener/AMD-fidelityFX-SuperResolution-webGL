@@ -22,20 +22,12 @@ const frag = glsl`
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-
+//
 // FidelityFX FSR v1.0.2 by AMD
-// ported to mpv by agyild
-
-// Changelog
-// Made it compatible with pre-OpenGL 4.0 renderers
-// Made it directly operate on LUMA plane, since the original shader was operating on LUMA by deriving it from RGB. This should cause a major increase in performance, especially on OpenGL 4.0+ renderers (4+2 texture lookups vs. 12+5)
-// Removed transparency preservation mechanism since the alpha channel is a separate source plane than LUMA
-// Added optional performance-saving lossy optimizations to EASU (Credit: atyuwen, https://atyuwen.github.io/posts/optimizing-fsr/)
-// 
-// Notes
-// Per AMD's guidelines only upscales content up to 4x (e.g., 1080p -> 2160p, 720p -> 1440p etc.) and everything else in between,
-// that means FSR will scale up to 4x at maximum, and any further scaling will be processed by mpv's scalers
-
+// ported to mpv by agyild - https://gist.github.com/agyild/82219c545228d70c5604f865ce0b0ce5
+// ported to WebGL by goingdigital - https://www.shadertoy.com/view/stXSWB
+// using lanczos3 (by imagire - https://www.shadertoy.com/view/ldcfRr) instead of AMD EASU for now
+// using glea.js by learosema - https://github.com/learosema/glea for webGL functions
 
 #define SHARPENING 1.0 // Sharpening intensity: Adjusts sharpening intensity by averaging the original pixels to the sharpened result. 1.0 is the unmodified default. 0.0 to 1.0.
 #define CONTRAST 1.0 // Adjusts the range the shader adapts to high contrast (0 is not all the way off). Higher values = more high contrast sharpening. 0.0 to 1.0.
