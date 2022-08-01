@@ -1,5 +1,9 @@
-const WIDTH = 640;
-const HEIGHT = 360;
+const WIDTH = 960;
+const HEIGHT = 480;
+//const WIDTH = 320;
+//const HEIGHT = 180;
+//const WIDTH = 640;
+//const HEIGHT = 360;
 
 const glsl = x => x;
 const frag = glsl`
@@ -32,6 +36,7 @@ const frag = glsl`
 
 #define SHARPENING 1.0 // Sharpening intensity: Adjusts sharpening intensity by averaging the original pixels to the sharpened result. 1.0 is the unmodified default. 0.0 to 1.0.
 #define CONTRAST 1.0 // Adjusts the range the shader adapts to high contrast (0 is not all the way off). Higher values = more high contrast sharpening. 0.0 to 1.0.
+#define PERFORMANCE 0 // Whether to use optimizations for performance with loss of quality
 
 precision highp float;
 
@@ -259,8 +264,20 @@ void FsrEasuF(
     float dirR = dir2.x + dir2.y;
     bool zro = dirR < (1.0/32768.0);
     dirR = inversesqrt(dirR);
+#if (PERFORMANCE == 1)
+	if (zro) {
+		vec4 w = vec4(0.0);
+		w.x = (1.0 - pp.x) * (1.0 - pp.y);
+		w.y =        pp.x  * (1.0 - pp.y);
+		w.z = (1.0 - pp.x) *        pp.y;
+		w.w =        pp.x  *        pp.y;
+		pix.r = clamp(dot(w, vec4(fL, gL, jL, kL)), 0.0, 1.0);
+		return;
+	}
+#elif (PERFORMANCE == 0)
     dirR = zro ? 1.0 : dirR;
     dir.x = zro ? 1.0 : dir.x;
+#endif
     dir *= vec2(dirR);
     // Transform from {0 to 2} to {0 to 1} range, and shape with square.
     len = len * 0.5;
@@ -283,8 +300,6 @@ void FsrEasuF(
     //  e f g h
     //  i j k l
     //    n o
-    vec3 min4 = min(min(fC,gC),min(jC,kC));
-    vec3 max4 = max(max(fC,gC),max(jC,kC));
     // Accumulation.
     vec3 aC = vec3(0);
     float aW = 0.;
@@ -302,7 +317,13 @@ void FsrEasuF(
     FsrEasuTapF(aC, aW, vec2( 0, 2)-pp, dir, len2, lob, clp, nC);
     //------------------------------------------------------------------------------------------------------------------------------
     // Normalize and dering.
+#if (PERFORMANCE == 1)
+	pix = aC/aW;
+#elif (PERFORMANCE == 0)
+    vec3 min4 = min(min(fC,gC),min(jC,kC));
+    vec3 max4 = max(max(fC,gC),max(jC,kC));
     pix=min(max4,max(min4,aC/aW));
+#endif
 }
 
 void mainImage( out vec4 fragColor, in vec2 fragCoord )
@@ -429,7 +450,15 @@ window.addEventListener('resize', () => {
   console.log(glea.width);
 });
 
+const fpsElem = document.querySelector("#fps");
+let then = 0;
 function loop(time) {
+  time *= 0.001;                          // convert to seconds
+  const deltaTime = time - then;          // compute time since last frame
+  then = time;                            // remember time for next frame
+  const fps = 1 / deltaTime;             // compute frames per second
+  fpsElem.textContent = fps.toFixed(1);  // update fps display
+ 
   const { gl } = glea;
   // Upload the image into the texture.
   if (video) {
