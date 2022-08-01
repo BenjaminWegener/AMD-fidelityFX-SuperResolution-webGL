@@ -3,8 +3,36 @@
 <head>
   <meta charset="UTF-8">
   <title>AMDs fidelityFX Super Resolution webcam demo</title>
-  <link type="text/css" href="./style.css">
+  <style type="text/css">
+body {
+  margin: 0;
+}
 
+canvas {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+}
+
+video {
+  display: none;
+}
+
+#container {
+  position: relative;   /* needed so child elements use this as their base */
+}
+
+#hud {
+  position: absolute;
+  left: 5px;
+  top: 5px;
+  background: rgba(0, 0, 0, 0.5);  /* 50% opaque black */
+  color: white;
+  padding: .5em;
+  font-family: monospace;
+  border-radius: .5em;
+}
+  </style>
 </head>
 <body>
   <div id="container">
