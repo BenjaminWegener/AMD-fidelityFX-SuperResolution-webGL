@@ -1,9 +1,14 @@
 //const WIDTH = 320;
 //const HEIGHT = 180;
-const WIDTH = 640;
-const HEIGHT = 360;
+//const WIDTH = 640;
+//const HEIGHT = 360;
 //const WIDTH = 960;
 //const HEIGHT = 480;
+const WIDTH = 1280;
+const HEIGHT = 720;
+//const WIDTH = 1920;
+//const HEIGHT = 1080;
+
 
 const glsl = x => x;
 const frag = glsl`
@@ -517,12 +522,16 @@ function takeScreenshot() {
 
 async function setup() {
   const { gl } = glea;
-  try {
-    await accessWebcam(video);
-  } catch (ex) {
-    video = null;
-    console.error(ex.message);
-  }
+  video.addEventListener("playing", function() {
+    camTexture = glea.createTexture(0);
+    // Upload the image into the texture.
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, video || fallbackImage);
+  
+    glea.setActiveTexture(0, camTexture);
+
+    glea.uniI('camTexture', 0);
+    loop(0);
+  }, true);
   // video = null;
   if (! video) {
     try {
@@ -532,15 +541,38 @@ async function setup() {
       return false;
     }
   }
+  video.play();
 
-  camTexture = glea.createTexture(0);
-  // Upload the image into the texture.
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, video || fallbackImage);
-  
-  glea.setActiveTexture(0, camTexture);
 
-  glea.uniI('camTexture', 0);
-  loop(0);
 }
 
-setup();
+
+(function localFileVideoPlayer() {
+	'use strict'
+  var URL = window.URL || window.webkitURL
+  var displayMessage = function (message, isError) {
+    var element = document.querySelector('#message')
+    element.innerHTML = message
+    element.className = isError ? 'error' : 'info'
+  }
+  var playSelectedFile = function (event) {
+    var file = this.files[0]
+    var type = file.type
+    var videoNode = document.querySelector('video')
+    var canPlay = videoNode.canPlayType(type)
+    if (canPlay === '') canPlay = 'no'
+    var message = 'Can play type "' + type + '": ' + canPlay
+    var isError = canPlay === 'no'
+    displayMessage(message, isError)
+
+    if (isError) {
+      return
+    }
+
+    var fileURL = URL.createObjectURL(file)
+    videoNode.src = fileURL
+    setup();
+  }
+  var inputNode = document.querySelector('input')
+  inputNode.addEventListener('change', playSelectedFile, false)
+})()
