@@ -41,7 +41,7 @@ const frag = glsl`
 
 #define SHARPENING 1.0 // Sharpening intensity: Adjusts sharpening intensity by averaging the original pixels to the sharpened result. 1.0 is the unmodified default. 0.0 to 1.0.
 #define CONTRAST 1.0 // Adjusts the range the shader adapts to high contrast (0 is not all the way off). Higher values = more high contrast sharpening. 0.0 to 1.0.
-#define PERFORMANCE 0 // Whether to use optimizations for performance with loss of quality
+#define PERFORMANCE 1 // Whether to use optimizations for performance with loss of quality
 
 precision highp float;
 
@@ -331,7 +331,7 @@ void FsrEasuF(
 #endif
 }
 
-void mainImage( out vec4 fragColor, in vec2 fragCoord )
+void EASU( out vec4 fragColor, in vec2 fragCoord )
 {
     vec3 c;
     vec4 con0,con1,con2,con3;
@@ -346,43 +346,35 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     fragColor = vec4(xyz_to_rgb(c.xyz), 1);
 }
 
+vec4 getPixel(vec2 pos) {
+	vec2 coord = 1.0 - (pos + .5) / vec2(width, height);
+	coord.x = 1.0 - coord.x;
+	return texture2D(camTexture, coord);
+}
+
 void main() {
 	width_half = width / 2.0;
-	vec2 coord = 1.0 - gl_FragCoord.xy / vec2(width, height);
-	vec4 e = texture2D(camTexture, coord);
+	//vec2 coord = 1.0 - (gl_FragCoord.xy + .5) / vec2(width, height);
+	//coord.x = 1.0 - coord.x;
+	//vec4 e = texture2D(camTexture, coord);
+	vec4 e = getPixel(gl_FragCoord.xy);
 	if (gl_FragCoord.x > width_half){
-		vec2 coordTex = 1.0 - (gl_FragCoord.xy + .5) / vec2(texWidth, texHeight);
+		
 		vec4 e_xyz = vec4(rgb_to_xyz(e.rgb), 1);
-		mainImage(e_xyz, coordTex);  
+		EASU(e_xyz, 1.0 - (gl_FragCoord.xy + 0.5) / vec2(width, height));  
+		
 		// fetch a 3x3 neighborhood around the pixel 'e',
 		//  a b c
 		//  d(e)f
 		//  g h i	
-		vec2 a_coord =  1.0 - (gl_FragCoord.xy + vec2(-1.0, -1.0)) / vec2(width, height);
-		vec4 a_tex = texture2D(camTexture, a_coord);
-		vec3 a = a_tex.rgb;
-		vec2 b_coord =  1.0 - (gl_FragCoord.xy + vec2( 0.0, -1.0)) / vec2(width, height);
-		vec4 b_tex = texture2D(camTexture, b_coord);
-		vec3 b = b_tex.rgb;
-		vec2 c_coord =  1.0 - (gl_FragCoord.xy + vec2( 1.0, -1.0)) / vec2(width, height);
-		vec4 c_tex = texture2D(camTexture, c_coord);
-		vec3 c = c_tex.rgb;
-		vec2 f_coord =  1.0 - (gl_FragCoord.xy + vec2( 1.0,  0.0)) / vec2(width, height);
-		vec4 f_tex = texture2D(camTexture, f_coord);
-		vec3 f = f_tex.rgb;
-		vec2 g_coord =  1.0 - (gl_FragCoord.xy + vec2(-1.0,  1.0)) / vec2(width, height);
-		vec4 g_tex = texture2D(camTexture, g_coord);
-		vec3 g = g_tex.rgb;
-		vec2 h_coord =  1.0 - (gl_FragCoord.xy + vec2( 0.0,  1.0)) / vec2(width, height);
-		vec4 h_tex = texture2D(camTexture, h_coord);
-		vec3 h = h_tex.rgb;
-		vec2 d_coord =  1.0 - (gl_FragCoord.xy + vec2(-1.0,  0.0)) / vec2(width, height);
-		vec4 d_tex = texture2D(camTexture, d_coord);
-		vec3 d = d_tex.rgb;
-		vec2 i_coord =  1.0 - (gl_FragCoord.xy + vec2( 1.0,  1.0)) / vec2(width, height);
-		vec4 i_tex = texture2D(camTexture, i_coord);
-		vec3 i = i_tex.rgb;
-
+		vec3 a = getPixel(gl_FragCoord.xy + vec2(-1.0,-1.0)).rgb;
+		vec3 b = getPixel(gl_FragCoord.xy + vec2( 0.0,-1.0)).rgb;
+		vec3 c = getPixel(gl_FragCoord.xy + vec2( 1.0,-1.0)).rgb;
+		vec3 f = getPixel(gl_FragCoord.xy + vec2( 1.0, 0.0)).rgb;
+		vec3 g = getPixel(gl_FragCoord.xy + vec2(-1.0, 1.0)).rgb;
+		vec3 h = getPixel(gl_FragCoord.xy + vec2( 0.0, 1.0)).rgb;
+		vec3 d = getPixel(gl_FragCoord.xy + vec2(-1.0, 0.0)).rgb;
+		vec3 i = getPixel(gl_FragCoord.xy + vec2( 1.0, 1.0)).rgb;;
 		// Soft min and max.
 		//  a b c			b
 		//  d e f * 0.5	+ d e f * 0.5
@@ -480,23 +472,6 @@ function loop(time) {
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   requestAnimationFrame(loop);
 }
-
-function accessWebcam(video) {
-  return new Promise((resolve, reject) => {
-    const mediaConstraints = { audio: false, video: { width: {ideal: WIDTH}, height: {ideal: HEIGHT}, brightness: {ideal: 2} } };
-    navigator.mediaDevices.getUserMedia(mediaConstraints).then(mediaStream => {
-      video.srcObject = mediaStream;
-      video.setAttribute('playsinline', true);
-      video.onloadedmetadata = (e) => {
-        video.play();
-        resolve(video);
-      }
-    }).catch(err => {
-      reject(err);
-    });
-  });
-}
-
 
 function loadImage(url) {
   return new Promise((resolve, reject) => {
