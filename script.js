@@ -348,7 +348,6 @@ void EASU( out vec4 fragColor, in vec2 fragCoord )
 
 vec4 getPixel(vec2 pos) {
 	vec2 coord = 1.0 - (pos + .5) / vec2(width, height);
-	coord.x = 1.0 - coord.x;
 	return texture2D(camTexture, coord);
 }
 
