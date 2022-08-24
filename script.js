@@ -39,8 +39,8 @@ const frag = glsl`
 // using glea.js by learosema - https://github.com/learosema/glea for webGL functions
 // using colorspace functions from tobspr - https://github.com/tobspr/GLSL-Color-Spaces/blob/master/ColorSpaces.inc.glsl
 
-#define SHARPENING 1.0 // Sharpening intensity: Adjusts sharpening intensity by averaging the original pixels to the sharpened result. 1.0 is the unmodified default. 0.0 to 1.0.
-#define CONTRAST 1.0 // Adjusts the range the shader adapts to high contrast (0 is not all the way off). Higher values = more high contrast sharpening. 0.0 to 1.0.
+#define SHARPENING 2.0 // Sharpening intensity: Adjusts sharpening intensity by averaging the original pixels to the sharpened result. 1.0 is the unmodified default. 0.0 to 1.0.
+#define CONTRAST 2.0 // Adjusts the range the shader adapts to high contrast (0 is not all the way off). Higher values = more high contrast sharpening. 0.0 to 1.0.
 #define PERFORMANCE 1 // Whether to use optimizations for performance with loss of quality
 
 precision highp float;
@@ -86,7 +86,7 @@ vec3 xyz_to_rgb(vec3 xyz) {
 */
 
 vec3 FsrEasuCF(vec2 p) {
-	vec2 uv = 1.0 - (p + .5) / vec2(texWidth, texHeight);
+	vec2 uv = (p + .5) / vec2(texWidth, texHeight);
 	vec4 color = texture2D(camTexture, uv);
     return rgb_to_xyz(color.rgb);
 }
@@ -347,7 +347,8 @@ void EASU( out vec4 fragColor, in vec2 fragCoord )
 }
 
 vec4 getPixel(vec2 pos) {
-	vec2 coord = 1.0 - (pos + .5) / vec2(width, height);
+	vec2 coord = (pos + .5) / vec2(width, height);
+	coord.y = 1.0 - coord.y;
 	return texture2D(camTexture, coord);
 }
 
@@ -360,7 +361,7 @@ void main() {
 	if (gl_FragCoord.x > width_half){
 		
 		vec4 e_xyz = vec4(rgb_to_xyz(e.rgb), 1);
-		EASU(e_xyz, 1.0 - (gl_FragCoord.xy + 0.5) / vec2(width, height));  
+		EASU(e_xyz, (gl_FragCoord.xy + 0.5) / vec2(width, height));  
 		
 		// fetch a 3x3 neighborhood around the pixel 'e',
 		//  a b c
@@ -443,7 +444,6 @@ const glea = new GLea({
 
 window.addEventListener('resize', () => {
   glea.resize();
-  console.log(glea.width);
 });
 
 const fpsElem = document.querySelector("#fps");
@@ -465,8 +465,8 @@ function loop(time) {
   glea.clear();
   glea.uni('width', glea.width);
   glea.uni('height', glea.height);
-  glea.uni('texWidth', WIDTH);
-  glea.uni('texHeight', HEIGHT);
+  glea.uni('texWidth', video.videoWidth);
+  glea.uni('texHeight', video.videoHeight);
 
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   requestAnimationFrame(loop);
