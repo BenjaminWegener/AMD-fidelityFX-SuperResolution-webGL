@@ -1,15 +1,3 @@
-//const WIDTH = 320;
-//const HEIGHT = 180;
-//const WIDTH = 640;
-//const HEIGHT = 360;
-//const WIDTH = 960;
-//const HEIGHT = 480;
-const WIDTH = 1280;
-const HEIGHT = 720;
-//const WIDTH = 1920;
-//const HEIGHT = 1080;
-
-
 const glsl = x => x;
 const frag = glsl`
 // Copyright (c) 2021 Advanced Micro Devices, Inc. All rights reserved.
