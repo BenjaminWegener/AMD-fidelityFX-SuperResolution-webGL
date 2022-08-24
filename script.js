@@ -447,13 +447,16 @@ function loop(time) {
   if (video) {
     glea.setActiveTexture(0, camTexture);
     gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, video);  
+    glea.uni('texWidth', video.videoWidth);
+    glea.uni('texHeight', video.videoHeight);
+  } else {
+    glea.uni('texWidth', 1);
+    glea.uni('texHeight', 1);
   }
   
   glea.clear();
   glea.uni('width', glea.width);
   glea.uni('height', glea.height);
-  glea.uni('texWidth', video.videoWidth);
-  glea.uni('texHeight', video.videoHeight);
 
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   requestAnimationFrame(loop);
