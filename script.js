@@ -23,7 +23,6 @@ const frag = glsl`
 // FidelityFX FSR v1.0.2 by AMD
 // ported to mpv by agyild - https://gist.github.com/agyild/82219c545228d70c5604f865ce0b0ce5
 // ported to WebGL by goingdigital - https://www.shadertoy.com/view/stXSWB
-// using lanczos3 (by imagire - https://www.shadertoy.com/view/ldcfRr) instead of AMD EASU for now
 // using glea.js by learosema - https://github.com/learosema/glea for webGL functions
 // using colorspace functions from tobspr - https://github.com/tobspr/GLSL-Color-Spaces/blob/master/ColorSpaces.inc.glsl
 
