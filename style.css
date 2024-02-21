@@ -1,0 +1,84 @@
+html, body, div, label, canvas{
+	margin: 0;
+	height: 100%;
+	width: 100%;
+	overflow: hidden;	
+}
+
+label{
+	font-size: 10vh;
+}
+
+video, input {
+	display: none;
+}
+
+.hud {
+	opacity: 1;
+	color: white;
+}
+
+#parent {
+	text-align: center;
+	font-family: monospace;
+	display: grid;
+	grid-template-columns: repeat(7, 1fr);
+	grid-template-rows: repeat(6, 1fr);
+	grid-column-gap: 3%;
+	grid-row-gap: 0px;
+}
+
+#canvas {
+	grid-area: 1 / 1 / 7 / 8;
+	z-index: -2;
+}
+
+#box {
+	background-color: gray;
+	grid-area: 6 / 1 / 7 / 8;
+	border-radius: 0.5em;
+	z-index: -1;
+}
+
+#heading {
+	grid-area: 2 / 2 / 3 / 7;
+	display: none;
+}
+
+#description { 
+	grid-area: 3 / 2 / 4 / 7;
+	display: none; 
+}
+
+#seekbar { 
+	grid-area: 6 / 3 / 7 / 7;
+	cursor: pointer;
+	height: 50%;
+	top: 25%;
+	outline: thin solid white;
+	overflow: hidden;
+	position: relative;
+	width: 100%;
+}
+
+#seekbar_span{
+  background-color: white;
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 0;
+}
+
+#open { 
+	grid-area: 6 / 1 / 7 / 2;
+}
+
+#play { 
+	grid-area: 6 / 2 / 7 / 3;
+}
+
+#enhance { 
+	grid-area: 6 / 7 / 7 / 8;
+	border: dashed;
+}

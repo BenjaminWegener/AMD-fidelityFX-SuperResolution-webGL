@@ -58,6 +58,7 @@ class GLea {
         this.contextType = contextType;
         this.glOptions = glOptions;
         this.gl = gl || this.getContext(contextType, glOptions);
+//        this.gl.pixelStorei(this.gl.UNPACK_FLIP_X_WEBGL, false);
         const program = this.gl.createProgram();
         this.program = program;
         this.buffers = {};
@@ -269,8 +270,8 @@ class GLea {
      * @typedef GLeaTextureOptions
      * @property {string} textureWrapS default: clampToEdge
      * @property {string} textureWrapT default: clampToEdge
-     * @property {string} textureMinFilter default: nearest
-     * @property {string} textureMagFilter default: nearest
+     * @property {string} textureMinFilter default: linear
+     * @property {string} textureMagFilter default: linear
      */
     /**
      * Create a texture object
@@ -282,8 +283,8 @@ class GLea {
     createTexture(textureIndex = 0, params = {
         textureWrapS: 'clampToEdge',
         textureWrapT: 'clampToEdge',
-        textureMinFilter: 'nearest',
-        textureMagFilter: 'nearest',
+        textureMinFilter: 'linear',
+        textureMagFilter: 'linear',
     }) {
         const scream = (str = '') => /^[A-Z0-9_]+$/.test(str)
             ? str
@@ -442,6 +443,18 @@ class GLea {
         const loc = gl.getUniformLocation(program, name);
         if (typeof data === 'number') {
             gl.uniform1i(loc, data);
+        }
+    }
+    /**
+     * Set uniform bool
+     * @param {string} name uniform variable name
+     * @param {boolean} data data
+     */
+    uniB(name, data) {
+        const { gl, program } = this;
+        const loc = gl.getUniformLocation(program, name);
+        if (typeof data === 'boolean') {
+            gl.uniform1f(loc, data);
         }
     }
     /**

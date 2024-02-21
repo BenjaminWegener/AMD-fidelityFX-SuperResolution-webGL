@@ -1,4 +1,5 @@
 # AMD-fidelityFX-SuperResolution-webGL
+
 webGL implementation of AMDs fidelityFX Super Resolution using local video file (x265 only in edge and safari)
 
 online demo: https://htmlpreview.github.io/?https://github.com/BenjaminWegener/AMD-fidelityFX-SuperResolution-webGL/blob/local-file/index.html

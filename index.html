@@ -1,54 +1,32 @@
 <!DOCTYPE html>
-<html lang="en" >
-<head>
-  <meta charset="UTF-8">
-  <title>AMDs fidelityFX Super Resolution video demo</title>
-  <style type="text/css">
-body {
-  margin: 0;
-}
-
-canvas {
-  display: block;
-  width: 100vw;
-  height: 100vh;
-}
-
-video {
-  display: none;
-}
-
-#container {
-  position: relative;   /* needed so child elements use this as their base */
-}
-
-#hud {
-  position: absolute;
-  left: 5px;
-  top: 5px;
-  background: rgba(0, 0, 0, 0.5);  /* 50% opaque black */
-  color: white;
-  padding: .5em;
-  font-family: monospace;
-  border-radius: .5em;
-}
-  </style>
-</head>
-<body>
-  <div id="container">
-    <canvas id="c"></canvas>
-    <div id="hud">fps: <span id="fps"></span>
-      <h1>HTML5 local video file player example</h1>
-      <div id="message"></div>
-      <input type="file" accept="video/*"/>
-      <video controls autoplay></video>
-    
-    </div>
-  </div>
-<!--  
-  <video></video>
--->
-  <script src='./glea.js'></script><script  src="./script.js"></script>
-
-</body>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<title>video.play</title>
+		<link rel="stylesheet" href="./style.css">
+	</head>
+	<body>
+		<div id="parent">
+			<canvas id="canvas"></canvas>
+			<div class="hud" id="box"></div>
+			<div class="hud" id="heading">
+				<h1>video.play</h1>
+				<h2>ai&nbsp;enhanced&nbsp;movies</h2>
+			</div>
+			<div class="hud" id="description">
+				<span id="fps"></span>
+				<span id="message"></span>
+			</div>
+			<div class="hud" id="seekbar">
+				<span id="seekbar_span"></span>
+			</div>
+			<label class="hud" id="open" for="eject">&#x23cf;</label>
+			<label class="hud" id="play">&#x23ef;</label>
+			<label class="hud" id="enhance">&#x2728;</label>
+		</div>
+		<input id="eject" type="file" accept="video/*"/>
+		<video autoplay></video>
+		<script src="./glea.js"></script>
+		<script src="./script.js"></script>
+	</body>
 </html>
